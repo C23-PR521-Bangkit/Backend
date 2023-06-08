@@ -53,10 +53,10 @@ const init = async () => {
                 var email = request.payload.email
                 var password = request.payload.password
 
-                const qry = await Connection.raw2(`
+                var qry
+                qry = await Connection.raw2(`
                     SELECT * FROM user WHERE USER_EMAIL = ? AND USER_PASSWORD = ?
-                `, [email, password]);
-                console.log(qry[1])
+                `, [email, password])
 
                 var user = qry[0]
                 if(user.length == 0){
@@ -67,6 +67,37 @@ const init = async () => {
                     user : user[0]
                 }
                 return helper.compose(h, SUCCESS, `Selamat datang, ${data.user.USER_FULLNAME}`, data)
+            }
+        },
+
+        {
+            path: '/auth/register',
+            method: 'POST',
+            options: {
+                payload: {
+                    multipart: true
+                }
+            },
+            handler: async (request, h) => {
+                var email = request.payload.email
+                var password = request.payload.password
+                var phone = request.payload.phone
+
+                var qry
+                qry = await Connection.raw2(`
+                    SELECT * FROM user WHERE USER_EMAIL = ?
+                `, [email])
+                var user = qry[0]
+
+                if(user.length > 0){
+                    return helper.compose(h, ERROR, `Maaf, email ${email} sudah digunakan`)
+                }
+
+                qry = await Connection.raw2(`
+                    INSERT INTO user (USER_EMAIL, USER_PHONE, USER_PASSWORD) VALUES (?, ?, ?)
+                `, [email, phone, password])
+
+                return helper.compose(h, SUCCESS, `Berhasil register`)
             }
         },
 
