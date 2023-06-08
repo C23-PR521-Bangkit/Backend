@@ -4,9 +4,11 @@ const Hapi = require('@hapi/hapi')
 const Inert = require("@hapi/inert")
 const path = require('path')
 const Connection = require('./dbconfig')
+const fs = require("fs")
 const helper = require('./helper')
-const SUCCESS = "SUCCESS";
-const ERROR = "ERROR";
+const md5 = require('js-md5')
+const SUCCESS = "SUCCESS"
+const ERROR = "ERROR"
 
 
 const init = async () => {
@@ -98,6 +100,55 @@ const init = async () => {
                 `, [email, phone, password])
 
                 return helper.compose(h, SUCCESS, `Berhasil register`)
+            }
+        },
+
+        {
+            path: '/fruit/classify',
+            method: 'POST',
+            options: {
+                payload: {
+                    multipart: true,
+                    output: 'stream',
+                    parse: true,
+                    maxBytes: 10485760
+                }
+            },
+            handler: async (request, h) => {
+                var image = request.payload.image
+                console.log(image)
+
+                var fileData = image.hapi
+                console.log(fileData)
+                var filename = fileData.filename
+                var arrFilename = filename.split(".")
+                if(arrFilename.length == 0){
+                    return helper.compose(h, ERROR, `File tidak valid`)
+                }
+                var fileExtension = arrFilename[arrFilename.length - 1]
+
+                var datetime = new Date()
+                var filename = "image-" + md5(datetime.toString()) + "." + fileExtension
+
+                var buffer = Buffer.from(image._data, 'hex')
+                fs.writeFile('uploads/' + filename, buffer, (err) => {
+                    if(err) console.log(err)
+                })
+
+                var file = fs.statSync("uploads/" + filename)
+                console.log(file)
+
+                var fileSizeInBytes = file.size;
+                var fileSizeInMegabytes = fileSizeInBytes / (1024*1024);
+                console.log(fileSizeInMegabytes)
+
+                if(fileSizeInMegabytes > 10){
+                    return helper.compose(h, ERROR, `Ukuran file maksimal 10 MB`)
+                }
+
+                // do machine learning prediction
+
+                return helper.compose(h, SUCCESS, `Berhasil upload`)
             }
         },
 

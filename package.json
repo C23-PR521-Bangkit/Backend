@@ -14,6 +14,7 @@
     "@hapi/vision": "^7.0.1",
     "handlebars": "^4.7.7",
     "hapi-geo-locate": "^4.1.1",
+    "js-md5": "^0.7.3",
     "mysql2": "^3.3.3",
     "sequelize": "^6.32.0"
   }
