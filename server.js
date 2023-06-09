@@ -14,7 +14,7 @@ const ERROR = "ERROR"
 const init = async () => {
 
     const server = Hapi.Server({
-        host: 'localhost',
+        host: '192.168.0.23',
         port: 888,
         routes : {
             files : {
@@ -42,6 +42,14 @@ const init = async () => {
 
 
     server.route([
+
+        {
+            path: '/tes',
+            method: 'GET',
+            handler: async (request, h) => {
+                return helper.compose(h, SUCCESS, `Tested`)
+            }
+        },
 
         {
             path: '/auth/login',

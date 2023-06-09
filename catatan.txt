@@ -4,6 +4,7 @@
 - jalanken service mySQL (misal pake xampp)
 - setup konfigurasi database di /dbconfig/index.js
 - import database dari file db.sql
+- ganti host (ip) di konfigurasi Hapi server
 - run: nodemon -e hbs,js,jpg,jpeg,png server.js
 - kemungkinan saat pertama run akan error, copas saja errornya di google lgsg ketemu (akan disuruh run command di powershell)
 - backend sudah running, di http://localhost:888
