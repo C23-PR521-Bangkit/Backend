@@ -1,9 +1,10 @@
 const Sequelize = require('sequelize')
+const env = require('.././env')
 
-const sequelize = new Sequelize('frutify', 'root', '', {
-    host: 'localhost',
-    port: 3306,
-    dialect: 'mysql'
+const sequelize = new Sequelize(env.DB_DBNAME, env.DB_USERNAME, env.DB_PASSWORD, {
+    host: env.DB_HOST,
+    port: env.DB_PORT,
+    dialect: "mysql"
 });
 
 module.exports.connect = sequelize

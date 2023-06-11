@@ -7,6 +7,7 @@ const Connection = require('./dbconfig')
 const fs = require("fs")
 const helper = require('./helper')
 const md5 = require('js-md5')
+const env = require('./env')
 const SUCCESS = "SUCCESS"
 const ERROR = "ERROR"
 
@@ -14,8 +15,8 @@ const ERROR = "ERROR"
 const init = async () => {
 
     const server = Hapi.Server({
-        host: '192.168.0.23',
-        port: 888,
+        host: env.SERVER_HOST,
+        port: env.SERVER_PORT,
         routes : {
             files : {
                 relativeTo: path.join(__dirname, 'static')
@@ -44,10 +45,10 @@ const init = async () => {
     server.route([
 
         {
-            path: '/tes',
+            path: '/',
             method: 'GET',
             handler: async (request, h) => {
-                return helper.compose(h, SUCCESS, `Tested`)
+                return helper.compose(h, SUCCESS, `Tested`, env.SERVER_HOST)
             }
         },
 
@@ -160,7 +161,45 @@ const init = async () => {
             }
         },
 
+        {
+            path: '/product/list',
+            method: 'POST',
+            options: {
+                payload: {
+                    multipart: true
+                }
+            },
+            handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
+                var search = request.payload.search
+                var user_id = request.payload.user_id
+
+                var stringQry = `SELECT * FROM product as A JOIN fruit as B ON A.FRUIT_ID = B.FRUIT_ID JOIN user as C ON A.USER_ID = C.USER_ID `
+                var params = []
+                if(user_id){
+                    stringQry += `WHERE A.USER_ID = ? `
+                    params.push(user_id)
+                }
+                if(search && search.trim() != ""){
+                    stringQry += `WHERE A.PRODUCT_NAME LIKE ? OR A.PRODUCT_DESCRIPTION LIKE ? `
+                    var aParam = "%" + search + "%"
+                    params.push(aParam)
+                    params.push(aParam)
+                }
+
+                var qry
+                qry = await Connection.raw2(stringQry, params)
+
+                var data = {
+                    product : qry[0]
+                }
+                return helper.compose(h, SUCCESS, `List buah`, data)
+            }
+        },
+        
+
     ]);
+
 
     await server.start()
     console.log(`server started on : ${server.info.uri}`)

@@ -2,10 +2,10 @@
 - masuk folder backendnya
 - run: npm install
 - jalanken service mySQL (misal pake xampp)
-- setup konfigurasi database di /dbconfig/index.js
+- setup konfigurasi database di env.js
 - import database dari file db.sql
-- ganti host (ip) di konfigurasi Hapi server
+- ganti host (ip) di konfigurasi Hapi server di env.js
 - run: nodemon -e hbs,js,jpg,jpeg,png server.js
 - kemungkinan saat pertama run akan error, copas saja errornya di google lgsg ketemu (akan disuruh run command di powershell)
-- backend sudah running, di http://localhost:888
+- backend sudah running, di http://ip:port (contoh: http://192.168.0.23:888)
 - tes API sesuai yg ada di dokumentasi
