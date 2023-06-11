@@ -61,8 +61,11 @@ const init = async () => {
                 }
             },
             handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
                 var email = request.payload.email
+                if(!email) return helper.compose(h, ERROR, `Parameter tidak lengkap (email)`)
                 var password = request.payload.password
+                if(!password) return helper.compose(h, ERROR, `Parameter tidak lengkap (password)`)
 
                 var qry
                 qry = await Connection.raw2(`
@@ -90,9 +93,13 @@ const init = async () => {
                 }
             },
             handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
                 var email = request.payload.email
+                if(!email) return helper.compose(h, ERROR, `Parameter tidak lengkap (email)`)
                 var password = request.payload.password
+                if(!password) return helper.compose(h, ERROR, `Parameter tidak lengkap (password)`)
                 var phone = request.payload.phone
+                if(!phone) return helper.compose(h, ERROR, `Parameter tidak lengkap (phone)`)
 
                 var qry
                 qry = await Connection.raw2(`
@@ -124,7 +131,9 @@ const init = async () => {
                 }
             },
             handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
                 var image = request.payload.image
+                if(!image) return helper.compose(h, ERROR, `Parameter tidak lengkap (image)`)
                 console.log(image)
 
                 var fileData = image.hapi
@@ -157,7 +166,14 @@ const init = async () => {
 
                 // do machine learning prediction
 
-                return helper.compose(h, SUCCESS, `Berhasil upload`)
+                var data = {
+                    filename : filename,
+                    fruit : null,
+                    quality : "GOOD",
+                    price_estimation : 0
+                }
+
+                return helper.compose(h, SUCCESS, `Klasifikasi gambar`, data)
             }
         },
 
@@ -193,7 +209,160 @@ const init = async () => {
                 var data = {
                     product : qry[0]
                 }
-                return helper.compose(h, SUCCESS, `List buah`, data)
+                return helper.compose(h, SUCCESS, `List produk`, data)
+            }
+        },
+
+        {
+            path: '/product/detail',
+            method: 'POST',
+            options: {
+                payload: {
+                    multipart: true
+                }
+            },
+            handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
+                var product_id = request.payload.product_id
+                if(!product_id) return helper.compose(h, ERROR, `Parameter tidak lengkap (product_id)`)
+
+                var qry
+                qry = await Connection.raw2(`
+                    SELECT * FROM product as A JOIN fruit as B ON A.FRUIT_ID = B.FRUIT_ID JOIN user as C ON A.USER_ID = C.USER_ID WHERE A.PRODUCT_ID = ?
+                `, [product_id])
+
+                if(qry[0].length == 0){
+                    return helper.compose(h, ERROR, `Ops.. produk tidak ditemukan`)
+                }
+
+                var data = {
+                    product : qry[0][0]
+                }
+                return helper.compose(h, SUCCESS, `Detail produk`, data)
+            }
+        },
+
+        {
+            path: '/product/manage/create',
+            method: 'POST',
+            options: {
+                payload: {
+                    multipart: true
+                }
+            },
+            handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
+                var fruit_id = request.payload.fruit_id
+                if(!fruit_id) return helper.compose(h, ERROR, `Parameter tidak lengkap (fruit_id)`)
+                var user_id = request.payload.user_id
+                if(!user_id) return helper.compose(h, ERROR, `Parameter tidak lengkap (user_id)`)
+                var name = request.payload.name
+                if(!name) return helper.compose(h, ERROR, `Parameter tidak lengkap (name)`)
+                var description = request.payload.description
+                if(!description) return helper.compose(h, ERROR, `Parameter tidak lengkap (description)`)
+                var price = request.payload.price
+                if(!price) return helper.compose(h, ERROR, `Parameter tidak lengkap (price)`)
+                var unit = request.payload.unit
+                if(!unit) return helper.compose(h, ERROR, `Parameter tidak lengkap (unit)`)
+                var quality = request.payload.quality
+                if(!quality) return helper.compose(h, ERROR, `Parameter tidak lengkap (quality)`)
+                var filename = request.payload.filename
+                if(!filename) return helper.compose(h, ERROR, `Parameter tidak lengkap (filename)`)
+
+                var qry
+                qry = await Connection.raw2(`
+                    INSERT INTO product (FRUIT_ID, USER_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, PRODUCT_PRICE, PRODUCT_UNIT, PRODUCT_QUALITY, PRODUCT_FILE_PATH) VALUES(?,?,?,?,?,?,?,?)
+                `, [fruit_id, user_id, name, description, price, unit, quality, filename])
+
+                var data = {
+                    
+                }
+                return helper.compose(h, SUCCESS, `Berhasil menambahkan produk`, data)
+            }
+        },
+
+        {
+            path: '/product/manage/update',
+            method: 'POST',
+            options: {
+                payload: {
+                    multipart: true
+                }
+            },
+            handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
+                var product_id = request.payload.product_id
+                if(!product_id) return helper.compose(h, ERROR, `Parameter tidak lengkap (product_id)`)
+                var fruit_id = request.payload.fruit_id
+                if(!fruit_id) return helper.compose(h, ERROR, `Parameter tidak lengkap (fruit_id)`)
+                var user_id = request.payload.user_id
+                if(!user_id) return helper.compose(h, ERROR, `Parameter tidak lengkap (user_id)`)
+                var name = request.payload.name
+                if(!name) return helper.compose(h, ERROR, `Parameter tidak lengkap (name)`)
+                var description = request.payload.description
+                if(!description) return helper.compose(h, ERROR, `Parameter tidak lengkap (description)`)
+                var price = request.payload.price
+                if(!price) return helper.compose(h, ERROR, `Parameter tidak lengkap (price)`)
+                var unit = request.payload.unit
+                if(!unit) return helper.compose(h, ERROR, `Parameter tidak lengkap (unit)`)
+                var quality = request.payload.quality
+                if(!quality) return helper.compose(h, ERROR, `Parameter tidak lengkap (quality)`)
+                var filename = request.payload.filename
+                if(!filename) return helper.compose(h, ERROR, `Parameter tidak lengkap (filename)`)
+
+
+                var qry
+                qry = await Connection.raw2(`
+                SELECT * FROM product as A JOIN fruit as B ON A.FRUIT_ID = B.FRUIT_ID JOIN user as C ON A.USER_ID = C.USER_ID WHERE A.PRODUCT_ID = ? AND A.USER_ID = ?
+                `, [product_id, user_id])
+
+                if(qry[0].length == 0){
+                    return helper.compose(h, ERROR, `Ops.. produk tidak ditemukan`)
+                }
+                
+                qry = await Connection.raw2(`
+                    UPDATE product SET PRODUCT_NAME = ?, PRODUCT_DESCRIPTION = ?, PRODUCT_PRICE = ?, PRODUCT_UNIT = ?, PRODUCT_QUALITY = ?, PRODUCT_FILE_PATH = ? WHERE PRODUCT_ID = ?
+                `, [name, description, price, unit, quality, filename, product_id])
+
+                var data = {
+                    
+                }
+                return helper.compose(h, SUCCESS, `Berhasil memperbarui produk`, data)
+            }
+        },
+
+        {
+            path: '/product/manage/delete',
+            method: 'POST',
+            options: {
+                payload: {
+                    multipart: true
+                }
+            },
+            handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
+                var product_id = request.payload.product_id
+                if(!product_id) return helper.compose(h, ERROR, `Parameter tidak lengkap (product_id)`)
+                var user_id = request.payload.user_id
+                if(!user_id) return helper.compose(h, ERROR, `Parameter tidak lengkap (user_id)`)
+
+                var qry
+                qry = await Connection.raw2(`
+                    SELECT * FROM product WHERE PRODUCT_ID = ? AND USER_ID = ?
+                `, [product_id, user_id])
+
+                if(qry[0].length == 0){
+                    return helper.compose(h, ERROR, `Ops.. produk tidak ditemukan`)
+                }
+                
+                qry = await Connection.raw2(`
+                    DELETE FROM product WHERE PRODUCT_ID = ?
+                `, [product_id])
+
+                var data = {
+                    
+                }
+                return helper.compose(h, SUCCESS, `Berhasil menghapus produk`, data)
             }
         },
         

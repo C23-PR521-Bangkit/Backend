@@ -6,3 +6,4 @@ module.exports.compose = function(handler, status, message, payload = null){
         PAYLOAD: payload
     })
 }
+
