@@ -257,7 +257,7 @@ const init = async () => {
                     params.push(user_id)
                 }
                 if(search && search.trim() != ""){
-                    stringQry += `WHERE A.PRODUCT_NAME LIKE ? OR A.PRODUCT_DESCRIPTION LIKE ? `
+                    stringQry += `AND(A.PRODUCT_NAME LIKE ? OR A.PRODUCT_DESCRIPTION LIKE ?) `
                     var aParam = "%" + search + "%"
                     params.push(aParam)
                     params.push(aParam)
@@ -423,6 +423,66 @@ const init = async () => {
                     
                 }
                 return helper.compose(h, SUCCESS, `Berhasil menghapus produk`, data)
+            }
+        },
+
+        {
+            path: '/cart/list',
+            method: 'POST',
+            options: {
+                payload: {
+                    multipart: true
+                }
+            },
+            handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
+                var user_id = request.payload.user_id
+                if(!user_id) return helper.compose(h, ERROR, "Parameter tidak lengkap (user_id")
+
+                var qry
+                qry = await Connection.raw2(`
+                    SELECT * FROM cart as A JOIN product as B ON A.PRODUCT_ID = B.PRODUCT_ID JOIN user as C ON A.USER_ID = C.USER_ID WHERE A.USER_ID = ?
+                `, [user_id])
+                var cart = qry[0]
+                
+                qry = await Connection.raw2(`
+                    SELECT SUM(A.CART_QTY * B.PRODUCT_PRICE) as TOTAL FROM cart as A JOIN product as B ON A.PRODUCT_ID = B.PRODUCT_ID JOIN user as C ON A.USER_ID = C.USER_ID WHERE A.USER_ID = ?
+                `, [user_id])
+
+                var data = {
+                    cart : cart,
+                    total_price : qry[0][0].TOTAL == null ? 0 : parseInt(qry[0][0].TOTAL)
+                }
+                return helper.compose(h, SUCCESS, `List produk`, data)
+            }
+        },
+
+        {
+            path: '/cart/add',
+            method: 'POST',
+            options: {
+                payload: {
+                    multipart: true
+                }
+            },
+            handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
+                var user_id = request.payload.user_id
+                if(!user_id) return helper.compose(h, ERROR, `Parameter tidak lengkap (user_id)`)
+                var product_id = request.payload.product_id
+                if(!product_id) return helper.compose(h, ERROR, `Parameter tidak lengkap (product_id)`)
+                var qty = request.payload.qty
+                if(!qty) return helper.compose(h, ERROR, `Parameter tidak lengkap (qty)`)
+
+                var qry
+                qry = await Connection.raw2(`
+                    INSERT INTO cart (PRODUCT_ID, USER_ID, CART_QTY, CART_ADD_DATETIME) VALUES(?,?,?,?)
+                `, [product_id, user_id, qty, helper.currentDatetime("")])
+
+                var data = {
+                    
+                }
+                return helper.compose(h, SUCCESS, `Berhasil menambahkan ke keranjang`, data)
             }
         },
         
