@@ -441,7 +441,15 @@ const init = async () => {
 
                 var qry
                 qry = await Connection.raw2(`
-                    SELECT * FROM cart as A JOIN product as B ON A.PRODUCT_ID = B.PRODUCT_ID JOIN user as C ON A.USER_ID = C.USER_ID WHERE A.USER_ID = ?
+                    SELECT A.PRODUCT_ID, SUM(A.CART_QTY) AS TOTAL_QTY,
+                    (SELECT MAX(CART_ADD_DATETIME) FROM cart AS AA WHERE AA.USER_ID = A.USER_ID AND AA.PRODUCT_ID = A.PRODUCT_ID) AS LATEST, B.*, C.*
+                    FROM cart AS A
+                    JOIN user AS B ON A.USER_ID = B.USER_ID
+                    JOIN product AS C ON A.PRODUCT_ID = C.PRODUCT_ID
+                    JOIN fruit AS D ON C.FRUIT_ID = D.FRUIT_ID
+                    WHERE A.USER_ID = ?
+                    GROUP BY A.PRODUCT_ID
+                    ORDER BY LATEST DESC
                 `, [user_id])
                 var cart = qry[0]
                 
