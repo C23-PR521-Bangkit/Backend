@@ -85,6 +85,64 @@ const init = async () => {
         },
 
         {
+            path: '/auth/update',
+            method: 'POST',
+            options: {
+                payload: {
+                    multipart: true
+                }
+            },
+            handler: async (request, h) => {
+                if(request.payload == null) request.payload = {}
+                var email = request.payload.email
+                if(!email) return helper.compose(h, ERROR, `Parameter tidak lengkap (email)`)
+                var password = request.payload.password
+                if(!password) return helper.compose(h, ERROR, `Parameter tidak lengkap (password)`)
+                var phone = request.payload.phone
+                if(!phone) return helper.compose(h, ERROR, `Parameter tidak lengkap (phone)`)
+                var fullname = request.payload.password
+                if(!fullname) return helper.compose(h, ERROR, `Parameter tidak lengkap (fullname)`)
+                var address = request.payload.address
+                if(!address) return helper.compose(h, ERROR, `Parameter tidak lengkap (address)`)
+                var new_password = request.payload.new_password
+
+                var qry
+                qry = await Connection.raw2(`
+                    SELECT * FROM user WHERE USER_EMAIL = ? AND USER_PASSWORD = ?
+                `, [email, password])
+
+                var user = qry[0]
+                if(user.length == 0){
+                    return helper.compose(h, ERROR, `Mohon periksa kembali email dan/atau password anda`, data)
+                }
+
+                var stringQry = `
+                    UPDATE user SET USER_PHONE = ?, USER_FULLNAME = ?, USER_ADDRESS = ? 
+                `
+                var params = []
+                params.push(phone)
+                params.push(fullname)
+                params.push(address)
+                if(new_password){
+                    stringQry += `
+                        , USER_PASSWORD = ? 
+                    `
+                    params.push(new_password)
+                }
+                stringQry += `
+                    WHERE USER_EMAIL = ?
+                `
+                params.push(email)
+                qry = await Connection.raw2(stringQry, params)
+
+                var data = {
+                    
+                }
+                return helper.compose(h, SUCCESS, `Berhasil memperbarui profil`, data)
+            }
+        },
+
+        {
             path: '/auth/register',
             method: 'POST',
             options: {
@@ -100,6 +158,8 @@ const init = async () => {
                 if(!password) return helper.compose(h, ERROR, `Parameter tidak lengkap (password)`)
                 var phone = request.payload.phone
                 if(!phone) return helper.compose(h, ERROR, `Parameter tidak lengkap (phone)`)
+                var role = request.payload.role
+                if(!role) return helper.compose(h, ERROR, `Parameter tidak lengkap (role)`)
 
                 var qry
                 qry = await Connection.raw2(`
@@ -112,8 +172,8 @@ const init = async () => {
                 }
 
                 qry = await Connection.raw2(`
-                    INSERT INTO user (USER_EMAIL, USER_PHONE, USER_PASSWORD) VALUES (?, ?, ?)
-                `, [email, phone, password])
+                    INSERT INTO user (USER_EMAIL, USER_PHONE, USER_PASSWORD, USER_ROLE) VALUES (?, ?, ?, ?)
+                `, [email, phone, password, role])
 
                 return helper.compose(h, SUCCESS, `Berhasil register`)
             }
