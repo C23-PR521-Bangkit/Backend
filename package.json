@@ -16,6 +16,7 @@
     "hapi-geo-locate": "^4.1.1",
     "js-md5": "^0.7.3",
     "mysql2": "^3.3.3",
+    "node-gyp": "^9.4.0",
     "sequelize": "^6.32.0"
   }
 }

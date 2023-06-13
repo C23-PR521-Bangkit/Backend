@@ -11,7 +11,6 @@ const env = require('./env')
 const SUCCESS = "SUCCESS"
 const ERROR = "ERROR"
 
-
 const init = async () => {
 
     const server = Hapi.Server({
@@ -19,7 +18,7 @@ const init = async () => {
         port: env.SERVER_PORT,
         routes : {
             files : {
-                relativeTo: path.join(__dirname, 'static')
+                relativeTo: path.join(__dirname, 'uploads')
             }
         }
     })
@@ -48,7 +47,12 @@ const init = async () => {
             path: '/',
             method: 'GET',
             handler: async (request, h) => {
-                return helper.compose(h, SUCCESS, `Tested`, env.SERVER_HOST)
+                const MODEL_URL = server.info.uri + "/uploads?path=ml[slice]model.json"
+                const model = await helper.tf.loadLayersModel(MODEL_URL)
+                console.log(model.summary())
+                const input = tf.tensor2d([10.0], [1,1])
+                const result = model.predict(input)
+                return helper.compose(h, SUCCESS, `Tested`, result)
             }
         },
 
@@ -100,7 +104,7 @@ const init = async () => {
                 if(!password) return helper.compose(h, ERROR, `Parameter tidak lengkap (password)`)
                 var phone = request.payload.phone
                 if(!phone) return helper.compose(h, ERROR, `Parameter tidak lengkap (phone)`)
-                var fullname = request.payload.password
+                var fullname = request.payload.fullname
                 if(!fullname) return helper.compose(h, ERROR, `Parameter tidak lengkap (fullname)`)
                 var address = request.payload.address
                 if(!address) return helper.compose(h, ERROR, `Parameter tidak lengkap (address)`)
@@ -194,10 +198,10 @@ const init = async () => {
                 if(request.payload == null) request.payload = {}
                 var image = request.payload.image
                 if(!image) return helper.compose(h, ERROR, `Parameter tidak lengkap (image)`)
-                console.log(image)
+                //console.log(image)
 
                 var fileData = image.hapi
-                console.log(fileData)
+                //console.log(fileData)
                 var filename = fileData.filename
                 var arrFilename = filename.split(".")
                 if(arrFilename.length == 0){
@@ -214,11 +218,11 @@ const init = async () => {
                 })
 
                 var file = fs.statSync("uploads/" + filename)
-                console.log(file)
+                //console.log(file)
 
                 var fileSizeInBytes = file.size;
                 var fileSizeInMegabytes = fileSizeInBytes / (1024*1024);
-                console.log(fileSizeInMegabytes)
+                //console.log(fileSizeInMegabytes)
 
                 if(fileSizeInMegabytes > 10){
                     return helper.compose(h, ERROR, `Ukuran file maksimal 10 MB`)
@@ -492,6 +496,16 @@ const init = async () => {
                 }
                 return helper.compose(h, SUCCESS, `Berhasil menambahkan ke keranjang`, data)
             }
+        },
+
+        {
+            method: 'GET',
+            path: '/uploads',
+            handler: (request, h) => {
+                var path = request.query.path
+                path = path.replace("[slice]", "/")
+                return h.file('./' + path);
+            }    
         },
         
 

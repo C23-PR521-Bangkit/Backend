@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- Host:                         127.0.0.1
--- Server version:               10.1.38-MariaDB - mariadb.org binary distribution
+-- Server version:               10.3.15-MariaDB - mariadb.org binary distribution
 -- Server OS:                    Win64
 -- HeidiSQL Version:             12.1.0.6537
 -- --------------------------------------------------------
@@ -19,16 +19,46 @@
 CREATE DATABASE IF NOT EXISTS `frutify` /*!40100 DEFAULT CHARACTER SET latin1 */;
 USE `frutify`;
 
+-- Dumping structure for table frutify.cart
+CREATE TABLE IF NOT EXISTS `cart` (
+  `CART_ID` int(11) NOT NULL AUTO_INCREMENT,
+  `PRODUCT_ID` int(11) NOT NULL,
+  `USER_ID` int(11) NOT NULL,
+  `CART_QTY` int(11) NOT NULL,
+  `CART_ADD_DATETIME` datetime DEFAULT NULL,
+  PRIMARY KEY (`CART_ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+
+-- Dumping data for table frutify.cart: ~3 rows (approximately)
+INSERT INTO `cart` (`CART_ID`, `PRODUCT_ID`, `USER_ID`, `CART_QTY`, `CART_ADD_DATETIME`) VALUES
+	(4, 2, 3, 1, '2023-06-12 16:24:21'),
+	(5, 2, 3, 3, '2023-06-14 16:24:21'),
+	(6, 1, 3, 2, '2023-06-13 16:24:21');
+
 -- Dumping structure for table frutify.fruit
 CREATE TABLE IF NOT EXISTS `fruit` (
   `FRUIT_ID` int(11) NOT NULL AUTO_INCREMENT,
   `FRUIT_NAME` varchar(50) NOT NULL,
   PRIMARY KEY (`FRUIT_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 
--- Dumping data for table frutify.fruit: ~1 rows (approximately)
+-- Dumping data for table frutify.fruit: ~2 rows (approximately)
 INSERT INTO `fruit` (`FRUIT_ID`, `FRUIT_NAME`) VALUES
-	(1, 'Apel');
+	(1, 'Apel'),
+	(2, 'Pisang'),
+	(3, 'Jeruk');
+
+-- Dumping structure for table frutify.predict
+CREATE TABLE IF NOT EXISTS `predict` (
+  `PREDICT_ID` int(11) NOT NULL AUTO_INCREMENT,
+  `PREDICT_FILENAME` varchar(100) NOT NULL,
+  `FRUIT_ID` int(11) NOT NULL,
+  `PREDICT_QUALITY` varchar(50) NOT NULL,
+  `PREDICT_PRICE` int(11) NOT NULL,
+  PRIMARY KEY (`PREDICT_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Dumping data for table frutify.predict: ~0 rows (approximately)
 
 -- Dumping structure for table frutify.product
 CREATE TABLE IF NOT EXISTS `product` (
@@ -46,7 +76,7 @@ CREATE TABLE IF NOT EXISTS `product` (
 
 -- Dumping data for table frutify.product: ~2 rows (approximately)
 INSERT INTO `product` (`PRODUCT_ID`, `FRUIT_ID`, `USER_ID`, `PRODUCT_NAME`, `PRODUCT_DESCRIPTION`, `PRODUCT_PRICE`, `PRODUCT_UNIT`, `PRODUCT_QUALITY`, `PRODUCT_FILE_PATH`) VALUES
-	(1, 1, 1, 'Apel Segar', 'Apel segar kualitas debest', 30000, 'kg', 'GOOD', '-'),
+	(1, 1, 1, 'Apel Segar', 'Apel segar kualitas debes', 30000, 'kg', 'GOOD', '-'),
 	(2, 1, 1, 'Apel Segar', 'Apel segar kualitas lumayan', 25000, 'kg', 'GOOD', '-');
 
 -- Dumping structure for table frutify.user
@@ -66,7 +96,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 -- Dumping data for table frutify.user: ~2 rows (approximately)
 INSERT INTO `user` (`USER_ID`, `USER_EMAIL`, `USER_PHONE`, `USER_PASSWORD`, `USER_FULLNAME`, `USER_ROLE`, `USER_ADDRESS`, `USER_TOKEN`, `USER_TOKEN_EXPIRED`) VALUES
 	(1, 'badrul@gmail.com', '081215992673', '12345678', 'Badrul Akbar A M', 'SELLER', '', '', ''),
-	(3, 'akbar@gmail.com', '08122345', '12345678', 'Akbar M', 'BUYER', '', '', '');
+	(3, 'akbar@gmail.com', '08122345', '12345678', '12345678', 'BUYER', 'jl 123 oke', '', '');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
