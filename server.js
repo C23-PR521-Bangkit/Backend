@@ -10,6 +10,8 @@ const md5 = require('js-md5')
 const env = require('./env')
 const SUCCESS = "SUCCESS"
 const ERROR = "ERROR"
+const tf = require('@tensorflow/tfjs');
+
 
 const init = async () => {
 
@@ -42,19 +44,6 @@ const init = async () => {
 
 
     server.route([
-
-        {
-            path: '/',
-            method: 'GET',
-            handler: async (request, h) => {
-                const MODEL_URL = server.info.uri + "/uploads?path=ml[slice]model.json"
-                const model = await helper.tf.loadLayersModel(MODEL_URL)
-                console.log(model.summary())
-                const input = tf.tensor2d([10.0], [1,1])
-                const result = model.predict(input)
-                return helper.compose(h, SUCCESS, `Tested`, result)
-            }
-        },
 
         {
             path: '/auth/login',

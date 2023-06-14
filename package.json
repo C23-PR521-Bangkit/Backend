@@ -12,6 +12,7 @@
     "@hapi/hapi": "^21.3.2",
     "@hapi/inert": "^7.1.0",
     "@hapi/vision": "^7.0.1",
+    "@tensorflow/tfjs": "^4.7.0",
     "handlebars": "^4.7.7",
     "hapi-geo-locate": "^4.1.1",
     "js-md5": "^0.7.3",
