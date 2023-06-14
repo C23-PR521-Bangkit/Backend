@@ -433,26 +433,43 @@ const init = async () => {
                 if(!user_id) return helper.compose(h, ERROR, "Parameter tidak lengkap (user_id")
 
                 var qry
+
                 qry = await Connection.raw2(`
-                    SELECT A.PRODUCT_ID, SUM(A.CART_QTY) AS TOTAL_QTY,
-                    (SELECT MAX(CART_ADD_DATETIME) FROM cart AS AA WHERE AA.USER_ID = A.USER_ID AND AA.PRODUCT_ID = A.PRODUCT_ID) AS LATEST, B.*, C.*
-                    FROM cart AS A
-                    JOIN user AS B ON A.USER_ID = B.USER_ID
-                    JOIN product AS C ON A.PRODUCT_ID = C.PRODUCT_ID
-                    JOIN fruit AS D ON C.FRUIT_ID = D.FRUIT_ID
-                    WHERE A.USER_ID = ?
-                    GROUP BY A.PRODUCT_ID
-                    ORDER BY LATEST DESC
+                    SELECT * FROM user WHERE USER_ROLE = 'SELLER' AND USER_ID != ?
                 `, [user_id])
-                var cart = qry[0]
-                
-                qry = await Connection.raw2(`
-                    SELECT SUM(A.CART_QTY * B.PRODUCT_PRICE) as TOTAL FROM cart as A JOIN product as B ON A.PRODUCT_ID = B.PRODUCT_ID JOIN user as C ON A.USER_ID = C.USER_ID WHERE A.USER_ID = ?
-                `, [user_id])
+                var cartSeller = qry[0]
+
+                var total_price = 0
+                //cartSeller.forEach(async function(value, index){
+                for(var i = 0; i < cartSeller.length; i++){
+                    qry = await Connection.raw2(`
+                        SELECT A.PRODUCT_ID, SUM(A.CART_QTY) AS TOTAL_QTY,
+                        (SELECT MAX(CART_ADD_DATETIME) FROM cart AS AA WHERE AA.USER_ID = A.USER_ID AND AA.PRODUCT_ID = A.PRODUCT_ID) AS LATEST, B.*, C.*
+                        FROM cart AS A
+                        JOIN user AS B ON A.USER_ID = B.USER_ID
+                        JOIN product AS C ON A.PRODUCT_ID = C.PRODUCT_ID
+                        JOIN fruit AS D ON C.FRUIT_ID = D.FRUIT_ID
+                        WHERE A.USER_ID = ?
+                        AND C.USER_ID = ?
+                        GROUP BY A.PRODUCT_ID
+                        ORDER BY LATEST DESC
+                    `, [user_id, cartSeller[i].USER_ID])
+                    var cart = qry[0]
+                    cartSeller[i].ITEM = cart
+                    
+                    qry = await Connection.raw2(`
+                        SELECT SUM(A.CART_QTY * B.PRODUCT_PRICE) as TOTAL FROM cart as A JOIN product as B ON A.PRODUCT_ID = B.PRODUCT_ID JOIN user as C ON A.USER_ID = C.USER_ID WHERE A.USER_ID = ? AND B.USER_ID = ?
+                    `, [user_id, cartSeller[i].USER_ID])
+                    var total = qry[0]
+                    cartSeller[i].TOTAL = total[0].TOTAL == null ? 0 : parseInt(total[0].TOTAL)
+
+                    total_price += cartSeller[i].TOTAL
+                }
+                //})
 
                 var data = {
-                    cart : cart,
-                    total_price : qry[0][0].TOTAL == null ? 0 : parseInt(qry[0][0].TOTAL)
+                    cart : cartSeller,
+                    total_price : total_price
                 }
                 return helper.compose(h, SUCCESS, `List produk`, data)
             }
