@@ -443,7 +443,7 @@ const init = async () => {
                 //cartSeller.forEach(async function(value, index){
                 for(var i = 0; i < cartSeller.length; i++){
                     qry = await Connection.raw2(`
-                        SELECT A.PRODUCT_ID, SUM(A.CART_QTY) AS TOTAL_QTY,
+                        SELECT A.CART_ID, A.PRODUCT_ID, SUM(A.CART_QTY) AS TOTAL_QTY,
                         (SELECT MAX(CART_ADD_DATETIME) FROM cart AS AA WHERE AA.USER_ID = A.USER_ID AND AA.PRODUCT_ID = A.PRODUCT_ID) AS LATEST, B.*, C.*
                         FROM cart AS A
                         JOIN user AS B ON A.USER_ID = B.USER_ID
