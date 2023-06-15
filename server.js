@@ -455,10 +455,20 @@ const init = async () => {
                         ORDER BY LATEST DESC
                     `, [user_id, cartSeller[i].USER_ID])
                     var cart = qry[0]
+
+                    //var invalidIndexArr = []
+                    for(var i2 = 0; i2 < cart.length; i2++ ){
+                        if(parseInt(cart[i2].TOTAL_QTY) == 0){
+                            //invalidIndexArr.push(i2)
+                            cart.splice(i2, 1)
+                        }
+                    }
+
                     cartSeller[i].ITEM = cart
                     
                     qry = await Connection.raw2(`
-                        SELECT SUM(A.CART_QTY * B.PRODUCT_PRICE) as TOTAL FROM cart as A JOIN product as B ON A.PRODUCT_ID = B.PRODUCT_ID JOIN user as C ON A.USER_ID = C.USER_ID WHERE A.USER_ID = ? AND B.USER_ID = ?
+                        SELECT SUM(A.CART_QTY * B.PRODUCT_PRICE) as TOTAL FROM cart as A JOIN product as B ON A.PRODUCT_ID = B.PRODUCT_ID JOIN user as C ON A.USER_ID = C.USER_ID
+                        WHERE A.USER_ID = ? AND B.USER_ID = ?
                     `, [user_id, cartSeller[i].USER_ID])
                     var total = qry[0]
                     cartSeller[i].TOTAL = total[0].TOTAL == null ? 0 : parseInt(total[0].TOTAL)
